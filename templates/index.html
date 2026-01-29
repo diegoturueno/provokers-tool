@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profiling Tool de Nuevas Masculinidades Provokers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header class="main-header">
+            <div class="logo">Profiling Tool de Nuevas Masculinidades <span class="highlight">Provokers</span></div>
+            <div class="mode-switch">
+                <span id="mode-label">Modo Local (Ollama)</span>
+                <label class="switch">
+                    <input type="checkbox" id="cloud-toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <h1>Analizador de Nuevas Masculinidades</h1>
+                <p class="subtitle">Clasifica discursos usando el modelo del Observatorio Provokers.</p>
+
+                <textarea id="stimulus-input" placeholder="Escribe o pega aquí el texto a analizar..."></textarea>
+
+                <div class="controls">
+                    <button id="analyze-btn" class="primary-btn">
+                        <span class="btn-text">Analizar Estímulo</span>
+                        <div class="loader" id="loader"></div>
+                    </button>
+                </div>
+            </section>
+
+            <section class="results-section" id="results-area">
+                <!-- Los resultados aparecerán aquí -->
+                <div class="placeholder-text">Los resultados del análisis aparecerán aquí.</div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
