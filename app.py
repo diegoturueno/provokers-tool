@@ -7,6 +7,12 @@ from classifier import classify_stimulus_openai, classify_stimulus_local, load_m
 
 app = Flask(__name__)
 
+# --- DEBUG HANDLER (TEMPORARY) ---
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    return f"<pre>{traceback.format_exc()}</pre>", 500
+
 # --- Rutas de Vistas (Frontend) ---
 
 @app.route('/')
