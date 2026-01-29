@@ -166,6 +166,8 @@ def get_axis_assignments(case_id):
 def init_db():
     conn = get_db_connection()
     c = conn.cursor()
+    
+    # 1. Core Tables
     c.execute('''CREATE TABLE IF NOT EXISTS cases
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, identifier TEXT, description TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, status TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS inputs
@@ -174,166 +176,60 @@ def init_db():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id INTEGER, description TEXT, recurrence TEXT, persistence TEXT, pressure_context TEXT, contradictions TEXT, is_validated BOOLEAN DEFAULT 0)''')
     c.execute('''CREATE TABLE IF NOT EXISTS axis_assignments
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id INTEGER, pattern_id INTEGER, axis_name TEXT, justification TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
-    conn.commit()
-    conn.close()
 
-# Inicializar DB al importar si no existe
-init_db()
-
-# --- PHASE 4: AXIS STATES ---
-def init_axis_states_table():
-    conn = get_db_connection()
-    c = conn.cursor()
+    # 2. Phase 4: Axis States
     c.execute('''
         CREATE TABLE IF NOT EXISTS axis_states (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             case_id INTEGER NOT NULL,
             axis_name TEXT NOT NULL,
-            status TEXT NOT NULL, -- Definido, Parcial, No definido, Tensión
-            value TEXT, -- El valor específico (ej. "Tradicional", "Aliado")
+            status TEXT NOT NULL,
+            value TEXT,
             justification TEXT,
             FOREIGN KEY (case_id) REFERENCES cases (id)
         )
     ''')
-    conn.commit()
-    conn.close()
 
-def save_axis_state(case_id, axis_name, status, value, justification):
-    conn = get_db_connection()
-    c = conn.cursor()
-    # Upsert logic (delete old for this axis/case to keep it simple)
-    c.execute('DELETE FROM axis_states WHERE case_id = ? AND axis_name = ?', (case_id, axis_name))
-    c.execute('INSERT INTO axis_states (case_id, axis_name, status, value, justification) VALUES (?, ?, ?, ?, ?)',
-              (case_id, axis_name, status, value, justification))
-    conn.commit()
-    conn.close()
-
-def get_axis_states(case_id):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('SELECT * FROM axis_states WHERE case_id = ?', (case_id,))
-    rows = c.fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
-
-# --- PHASE 5: TENSIONS ---
-def init_tensions_table():
-    conn = get_db_connection()
-    c = conn.cursor()
+    # 3. Phase 5: Tensions
     c.execute('''
         CREATE TABLE IF NOT EXISTS tensions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             case_id INTEGER NOT NULL,
             description TEXT NOT NULL,
-            type TEXT NOT NULL, -- Contradicción, Refuerzo, Paradoja
-            axes_involved TEXT, -- JSON list of axis names
-            severity TEXT, -- Alta, Media, Baja
+            type TEXT NOT NULL,
+            axes_involved TEXT,
+            severity TEXT,
             FOREIGN KEY (case_id) REFERENCES cases (id)
         )
     ''')
-    conn.commit()
-    conn.close()
 
-def save_tension(case_id, description, tension_type, axes_involved, severity):
-    conn = get_db_connection()
-    c = conn.cursor()
-    # Simple insert, we might want to clear previous tensions for this case first
-    # For now, let's clear old ones to avoid duplicates on re-run
-    # BUT be careful if we want to keep history. For this prototype, overwrite is better.
-    # We'll do a delete all for case before inserting in the app logic, or here?
-    # Let's just insert here.
-    c.execute('INSERT INTO tensions (case_id, description, type, axes_involved, severity) VALUES (?, ?, ?, ?, ?)',
-              (case_id, description, tension_type, json.dumps(axes_involved), severity))
-    conn.commit()
-    conn.close()
-
-def get_case_tensions(case_id):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('SELECT * FROM tensions WHERE case_id = ?', (case_id,))
-    rows = c.fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
-
-def clear_case_tensions(case_id):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('DELETE FROM tensions WHERE case_id = ?', (case_id,))
-    conn.commit()
-    conn.close()
-
-# --- PHASE 6: THRESHOLD EVALUATION ---
-def init_threshold_table():
-    conn = get_db_connection()
-    c = conn.cursor()
+    # 4. Phase 6: Threshold
     c.execute('''
         CREATE TABLE IF NOT EXISTS threshold_evaluations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             case_id INTEGER NOT NULL,
-            score INTEGER NOT NULL, -- 0 to 100
-            status TEXT NOT NULL, -- Apto, No Apto, Dudoso
+            score INTEGER NOT NULL,
+            status TEXT NOT NULL,
             reasoning TEXT,
             created_at TEXT
         )
     ''')
-    conn.commit()
-    conn.close()
 
-def save_threshold_evaluation(case_id, score, status, reasoning):
-    conn = get_db_connection()
-    c = conn.cursor()
-    created_at = datetime.now().isoformat()
-    # Overwrite previous evaluation for this case
-    c.execute('DELETE FROM threshold_evaluations WHERE case_id = ?', (case_id,))
-    c.execute('INSERT INTO threshold_evaluations (case_id, score, status, reasoning, created_at) VALUES (?, ?, ?, ?, ?)',
-              (case_id, score, status, reasoning, created_at))
-    conn.commit()
-    conn.close()
-
-def get_threshold_evaluation(case_id):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('SELECT * FROM threshold_evaluations WHERE case_id = ?', (case_id,))
-    row = c.fetchone()
-    conn.close()
-    return dict(row) if row else None
-
-# --- PHASE 7: ARCHETYPE ASSIGNMENT ---
-def init_archetype_table():
-    conn = get_db_connection()
-    c = conn.cursor()
+    # 5. Phase 7: Archetype
     c.execute('''
         CREATE TABLE IF NOT EXISTS archetype_assignments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             case_id INTEGER NOT NULL,
             archetype_name TEXT NOT NULL,
             description TEXT,
-            fit_score INTEGER, -- 0-100 confidence
-            key_traits TEXT, -- JSON list
+            fit_score INTEGER,
+            key_traits TEXT,
             created_at TEXT
         )
     ''')
+
     conn.commit()
     conn.close()
 
-def save_archetype_assignment(case_id, name, description, fit_score, key_traits):
-    conn = get_db_connection()
-    c = conn.cursor()
-    created_at = datetime.now().isoformat()
-    # Overwrite previous
-    c.execute('DELETE FROM archetype_assignments WHERE case_id = ?', (case_id,))
-    c.execute('INSERT INTO archetype_assignments (case_id, archetype_name, description, fit_score, key_traits, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-              (case_id, name, description, fit_score, json.dumps(key_traits), created_at))
-    conn.commit()
-    conn.close()
-
-def get_archetype_assignment(case_id):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('SELECT * FROM archetype_assignments WHERE case_id = ?', (case_id,))
-    row = c.fetchone()
-    conn.close()
-    return dict(row) if row else None
-
-# Initialize new table
-init_archetype_table()
+# Inicializar DB al importar si no existe
+init_db()
