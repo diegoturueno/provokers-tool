@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHENOMA - Vista de Caso</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="logo"><a href="/">PHENOMA <span class="highlight">AI</span></a></div>
+
+            <div class="mode-switch">
+                <span id="mode-label" style="font-size: 0.8rem; color: #94a1b2;">Modo Local (Ollama)</span>
+                <label class="switch">
+                    <input type="checkbox" id="cloud-toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="case-info-header">
+                <span class="case-id" id="header-case-id">Cargando...</span>
+                <span class="case-status">Fase 1: Inputs</span>
+            </div>
+        </header>
+
+        <div class="case-layout">
+            <aside class="sidebar">
+                <nav class="phase-nav">
+                    <a href="#" class="phase-link active" data-phase="1" onclick="switchPhase(1); return false;">
+                        <span class="phase-num">1</span> Inputs
+                    </a>
+                    <a href="#" class="phase-link" data-phase="2" onclick="switchPhase(2); return false;">
+                        <span class="phase-num">2</span> Patrones
+                    </a>
+                    <a href="#" class="phase-link" data-phase="3" onclick="switchPhase(3); return false;">
+                        <span class="phase-num">3</span> Ejes
+                    </a>
+                    <a href="#" class="phase-link" data-phase="4" onclick="switchPhase(4); return false;">
+                        <span class="phase-num">4</span> Dimensiones
+                    </a>
+                    <a href="#" class="phase-link" data-phase="5" onclick="switchPhase(5); return false;">
+                        <span class="phase-num">5</span> Tensiones
+                    </a>
+                    <a href="#" class="phase-link disabled" data-phase="7">
+                        <span class="phase-num">7</span> Arquetipo
+                    </a>
+                </nav>
+            </aside>
+
+            <main class="case-content">
+                <!-- VISTA FASE 1: INPUTS -->
+                <section id="phase-1-view">
+                    <div class="section-header">
+                        <h2>Inputs del Caso</h2>
+                        <button id="add-input-btn" class="secondary-btn">+ Agregar Input</button>
+                    </div>
+
+                    <div id="inputs-list" class="inputs-list">
+                        <!-- Lista de inputs -->
+                    </div>
+
+                    <!-- Formulario de Input (Oculto por defecto) -->
+                    <div id="input-form-container" class="panel hidden">
+                        <h3>Nuevo Input</h3>
+                        <form id="new-input-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tipo</label>
+                                    <select id="input-type">
+                                        <option value="frase">Frase</option>
+                                        <option value="discurso">Discurso</option>
+                                        <option value="relato">Relato</option>
+                                        <option value="situacion">Situación</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha</label>
+                                    <input type="date" id="input-date">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Contenido</label>
+                                <textarea id="input-content" rows="4" required></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="cancel-btn" id="cancel-input-btn">Cancelar</button>
+                                <button type="submit" class="primary-btn">Guardar Input</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- VISTA FASE 2: PATRONES -->
+                <section id="phase-2-view" class="hidden">
+                    <div class="section-header">
+                        <h2>Detección de Patrones</h2>
+                        <button id="analyze-patterns-btn" class="primary-btn">
+                            <span class="btn-text">✨ Detectar con IA</span>
+                            <div class="loader"></div>
+                        </button>
+                    </div>
+
+                    <div class="info-banner">
+                        La IA analizará los inputs cargados para encontrar recurrencias y contradicciones.
+                    </div>
+
+                    <div id="patterns-list" class="patterns-grid">
+                        <!-- Lista de patrones -->
+                    </div>
+                </section>
+
+                <!-- VISTA FASE 3: EJES -->
+                <section id="phase-3-view" class="hidden">
+                    <div class="section-header">
+                        <h2>Vinculación con Ejes</h2>
+                        <button id="auto-link-btn" class="primary-btn">
+                            <span class="btn-text">🔗 Vincular Automáticamente</span>
+                            <div class="loader"></div>
+                        </button>
+                    </div>
+
+                    <div class="axes-grid" id="axes-container">
+                        <!-- Se generarán 6 columnas, una por eje -->
+                        <div class="axis-column" data-axis="Generación">
+                            <h3>Generación</h3>
+                            <div class="axis-content"></div>
+                        </div>
+                        <div class="axis-column" data-axis="Relación con el cambio feminista">
+                            <h3>Relación Feminista</h3>
+                            <div class="axis-content"></div>
+                        </div>
+                        <div class="axis-column" data-axis="Modelo de masculinidad">
+                            <h3>Modelo Masculinidad</h3>
+                            <div class="axis-content"></div>
+                        </div>
+                        <div class="axis-column" data-axis="Apertura a diversidad sexual y familiar">
+                            <h3>Diversidad</h3>
+                            <div class="axis-content"></div>
+                        </div>
+                        <div class="axis-column" data-axis="Manejo emocional y cuidado de sí">
+                            <h3>Manejo Emocional</h3>
+                            <div class="axis-content"></div>
+                        </div>
+                        <div class="axis-column" data-axis="Presión social / falta de referentes">
+                            <h3>Presión Social</h3>
+                            <div class="axis-content"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VISTA FASE 4: DIMENSIONES -->
+                <section id="phase-4-view" class="hidden">
+                    <div class="section-header">
+                        <h2>Clasificación de Dimensiones</h2>
+                        <button id="analyze-dimensions-btn" class="primary-btn">
+                            <span class="btn-text">📊 Analizar Dimensiones</span>
+                            <div class="loader"></div>
+                        </button>
+                    </div>
+
+                    <div class="info-banner">
+                        Determinación del estado y valor de cada eje basado en las evidencias acumuladas.
+                    </div>
+
+                    <div class="dimensions-grid" id="dimensions-container">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </section>
+
+                <!-- VISTA FASE 5: TENSIONES -->
+                <section id="phase-5-view" class="hidden">
+                    <div class="section-header">
+                        <h2>Tensiones Estructurales</h2>
+                        <button id="analyze-tensions-btn" class="primary-btn">
+                            <span class="btn-text">⚡ Detectar Tensiones</span>
+                            <div class="loader"></div>
+                        </button>
+                    </div>
+
+                    <div class="info-banner">
+                        Análisis de contradicciones y paradojas entre los diferentes ejes del perfil.
+                    </div>
+
+                    <div class="tensions-list" id="tensions-container">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Script con ID del caso inyectado -->
+    <script>
+        const CURRENT_CASE_ID = {{ case_id }};
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}?v=12"></script>
+</body>
+
+</html>
