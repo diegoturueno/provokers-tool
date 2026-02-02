@@ -764,57 +764,62 @@ document.addEventListener('DOMContentLoaded', () => {
                         "Presión Social"
                     ];
 
-                    window.myRadarChart = new Chart(ctx, {
-                        type: 'radar',
-                        data: {
-                            labels: shortLabels,
-                            datasets: [{
-                                label: 'Perfil de Masculinidad',
-                                data: dataPoints,
-                                fill: true,
-                                backgroundColor: 'rgba(127, 90, 240, 0.2)', // --accent with opacity
-                                borderColor: '#7f5af0', // --accent
-                                pointBackgroundColor: '#7f5af0',
-                                pointBorderColor: '#fff',
-                                pointHoverBackgroundColor: '#fff',
-                                pointHoverBorderColor: '#7f5af0'
-                            }]
-                        },
-                        options: {
-                            elements: {
-                                line: {
-                                    borderWidth: 3
-                                }
+                    if (typeof Chart !== 'undefined') {
+                        window.myRadarChart = new Chart(ctx, {
+                            type: 'radar',
+                            data: {
+                                labels: shortLabels,
+                                datasets: [{
+                                    label: 'Perfil de Masculinidad',
+                                    data: dataPoints,
+                                    fill: true,
+                                    backgroundColor: 'rgba(127, 90, 240, 0.2)', // --accent with opacity
+                                    borderColor: '#7f5af0', // --accent
+                                    pointBackgroundColor: '#7f5af0',
+                                    pointBorderColor: '#fff',
+                                    pointHoverBackgroundColor: '#fff',
+                                    pointHoverBorderColor: '#7f5af0'
+                                }]
                             },
-                            scales: {
-                                r: {
-                                    angleLines: {
-                                        color: 'rgba(0, 0, 0, 0.1)'
-                                    },
-                                    grid: {
-                                        color: 'rgba(0, 0, 0, 0.1)'
-                                    },
-                                    pointLabels: {
-                                        font: {
-                                            size: 12,
-                                            family: "'Inter', sans-serif"
+                            options: {
+                                elements: {
+                                    line: {
+                                        borderWidth: 3
+                                    }
+                                },
+                                scales: {
+                                    r: {
+                                        angleLines: {
+                                            color: 'rgba(0, 0, 0, 0.1)'
                                         },
-                                        color: '#232946'
-                                    },
-                                    suggestedMin: 0,
-                                    suggestedMax: 100,
-                                    ticks: {
-                                        display: false // Hide numbers for cleaner look
+                                        grid: {
+                                            color: 'rgba(0, 0, 0, 0.1)'
+                                        },
+                                        pointLabels: {
+                                            font: {
+                                                size: 12,
+                                                family: "'Inter', sans-serif"
+                                            },
+                                            color: '#232946'
+                                        },
+                                        suggestedMin: 0,
+                                        suggestedMax: 100,
+                                        ticks: {
+                                            display: false // Hide numbers for cleaner look
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
                                     }
                                 }
-                            },
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        console.error("Chart.js library not loaded.");
+                        ctx.innerHTML = "<p style='color:red;'>Error: Librería gráfica no cargada.</p>";
+                    }
 
                 });
         }
