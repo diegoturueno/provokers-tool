@@ -12,7 +12,7 @@
 }
 
 * {
-    box_sizing: border-box;
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
@@ -833,6 +833,7 @@ select:focus {
     color: #2cb67d;
     border: 1px solid #2cb67d;
 }
+
 /* Loading State */
 .primary-btn {
     position: relative;
@@ -860,7 +861,9 @@ select:focus {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .primary-btn.loading .loader {

@@ -706,6 +706,117 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 .catch(e => console.error("Error loading report:", e));
+
+            // 5. Radar Chart Logic
+            // Fetch Axes data again (or reuse if available in 'data.axes')
+            fetch(`/api/cases/${CURRENT_CASE_ID}/axis_states`)
+                .then(res => res.json())
+                .then(axes => {
+                    const ctx = document.getElementById('axesRadarChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart if it exists
+                    if (window.myRadarChart) {
+                        window.myRadarChart.destroy();
+                    }
+
+                    // Define Axis Labels and default values
+                    // Ordering is important for shape consistency
+                    const axisLabels = [
+                        "Generación",
+                        "Relación con el cambio feminista",
+                        "Modelo de masculinidad",
+                        "Apertura a diversidad sexual y familiar",
+                        "Manejo emocional y cuidado de sí",
+                        "Presión social / falta de referentes"
+                    ];
+
+                    // Helper to score importance/definition
+                    // 100 = Definido / Positivo / Abierto
+                    // 50 = En Tensión / Ambigio
+                    // 20 = No Definido / Tradicional / Cerrado (low score doesn't mean bad, just 'low' intensity of new masculinity traits)
+                    const getScore = (status, value) => {
+                        const s = (status || "").toLowerCase();
+                        if (s.includes("definido") && !s.includes("no")) return 90;
+                        if (s.includes("tensión") || s.includes("tension")) return 50;
+                        if (s.includes("parcial")) return 60;
+                        if (s.includes("no definido")) return 30;
+                        return 40; // Default fallback
+                    };
+
+                    // Map DB data to ordered array
+                    const dataPoints = axisLabels.map(label => {
+                        const found = axes.find(a => a.axis_name.includes(label) || label.includes(a.axis_name));
+                        // Fuzzy match fallback or exact match
+                        if (found) {
+                            return getScore(found.status, found.value);
+                        }
+                        return 20; // Default low score if missing
+                    });
+
+                    // Short Labels for Chart
+                    const shortLabels = [
+                        "Generación",
+                        "Feminismo",
+                        "Modelo Masc.",
+                        "Diversidad",
+                        "Emociones",
+                        "Presión Social"
+                    ];
+
+                    window.myRadarChart = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: shortLabels,
+                            datasets: [{
+                                label: 'Perfil de Masculinidad',
+                                data: dataPoints,
+                                fill: true,
+                                backgroundColor: 'rgba(127, 90, 240, 0.2)', // --accent with opacity
+                                borderColor: '#7f5af0', // --accent
+                                pointBackgroundColor: '#7f5af0',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: '#7f5af0'
+                            }]
+                        },
+                        options: {
+                            elements: {
+                                line: {
+                                    borderWidth: 3
+                                }
+                            },
+                            scales: {
+                                r: {
+                                    angleLines: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    },
+                                    pointLabels: {
+                                        font: {
+                                            size: 12,
+                                            family: "'Inter', sans-serif"
+                                        },
+                                        color: '#232946'
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 100,
+                                    ticks: {
+                                        display: false // Hide numbers for cleaner look
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+
+                });
         }
 
         // Hook into switchPhase to load report when tab is clicked

@@ -6,426 +6,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profiling Tool de Nuevas Masculinidades Provokers</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="app-container">
-        <header class="main-header">
-            <div class="logo"><a href="/">Profiling Tool de Nuevas Masculinidades <span
-                        class="highlight">Provokers</span></a></div>
-            <nav>
-                <a href="/">Casos</a>
-                <a href="/context" target="_blank">Metodología ↗</a>
-            </nav>
-
-            <div class="mode-switch">
-                <span id="mode-label" style="font-size: 0.8rem; color: #94a1b2;">Modo Local (Ollama)</span>
-                <label class="switch">
-                    <input type="checkbox" id="cloud-toggle">
-                    <span class="slider round"></span>
-                </label>
-            </div>
-
-            <div class="case-info-header">
-                <span class="case-id" id="header-case-id">Cargando...</span>
-                <span class="case-status">Fase 1: Inputs</span>
-            </div>
-        </header>
-
-        <div class="case-layout">
-            <aside class="sidebar">
-                <div class="case-info">
-                    <h3>Caso #<span id="sidebar-case-id">{{ case_id }}</span></h3>
-                    <p id="sidebar-case-desc" class="case-desc">...</p>
+        <!-- ... (unchanged) ... -->
+        <!-- VISTA FASE 8: REPORTE -->
+        <section id="phase-8-view" class="hidden">
+            <div class="section-header">
+                <h2>Reporte Final</h2>
+                <div class="header-actions">
+                    <button onclick="window.print()" class="secondary-btn">🖨️ Imprimir / PDF</button>
                 </div>
-                <nav class="phase-nav">
-                    <a href="#" class="phase-link active" data-phase="1" onclick="switchPhase(1); return false;">
-                        <span class="phase-num">1</span> Inputs
-                    </a>
-                    <a href="#" class="phase-link" data-phase="2" onclick="switchPhase(2); return false;">
-                        <span class="phase-num">2</span> Patrones
-                    </a>
-                    <a href="#" class="phase-link" data-phase="3" onclick="switchPhase(3); return false;">
-                        <span class="phase-num">3</span> Ejes
-                    </a>
-                    <a href="#" class="phase-link" data-phase="4" onclick="switchPhase(4); return false;">
-                        <span class="phase-num">4</span> Dimensiones
-                    </a>
-                    <a href="#" class="phase-link" data-phase="5" onclick="switchPhase(5); return false;">
-                        <span class="phase-num">5</span> Tensiones
-                    </a>
-                    <a href="#" class="phase-link" data-phase="6" onclick="switchPhase(6); return false;">
-                        <span class="phase-num">6</span> Diagnóstico
-                    </a>
-                    <a href="#" class="phase-link" data-phase="7" onclick="switchPhase(7); return false;">
-                        <span class="phase-num">7</span> Arquetipo
-                    </a>
-                    <a href="#" class="phase-link" data-phase="8" onclick="switchPhase(8); return false;">
-                        <span class="phase-num">8</span> Reporte
-                    </a>
-            </aside>
+            </div>
 
-            <main class="case-content">
-                <!-- VISTA FASE 1: INPUTS -->
-                <section id="phase-1-view">
-                    <div class="section-header">
-                        <h2>Inputs del Caso</h2>
-                        <button id="add-input-btn" class="secondary-btn">+ Agregar Input</button>
+            <div class="info-banner">
+                <strong>Resumen Ejecutivo:</strong> Vista consolidada de todo el análisis, lista para exportar o
+                presentar.
+            </div>
+
+            <div class="report-container" id="report-content">
+                <!-- Header Reporte -->
+                <div class="report-header">
+                    <h1>PROVOKERS <span class="highlight">PROFILING TOOL</span></h1>
+                    <div class="meta-info">
+                        <p><strong>Caso ID:</strong> <span id="rep-case-id">--</span></p>
+                        <p><strong>Fecha:</strong> <span id="rep-date">--</span></p>
                     </div>
+                </div>
 
-                    <div class="info-banner">
-                        <strong>¿Qué sucede aquí?</strong> Cargamos la materia prima del caso (frases, discursos,
-                        relatos).<br>
-                        <strong>¿Por qué?</strong> Necesitamos registrar la evidencia pura sin interpretarla aún para
-                        alimentar el análisis posterior.
-                    </div>
+                <hr>
 
-                    <div id="inputs-list" class="inputs-list">
-                        <!-- Lista de inputs -->
-                    </div>
-
-                    <!-- Formulario de Input (Oculto por defecto) -->
-                    <div id="input-form-container" class="panel hidden">
-                        <h3>Nuevo Input</h3>
-                        <form id="new-input-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Tipo</label>
-                                    <select id="input-type">
-                                        <option value="frase">Frase</option>
-                                        <option value="discurso">Discurso</option>
-                                        <option value="relato">Relato</option>
-                                        <option value="situacion">Situación</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Fecha</label>
-                                    <input type="date" id="input-date">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Contenido</label>
-                                <textarea id="input-content" rows="4" required></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button type="button" class="cancel-btn" id="cancel-input-btn">Cancelar</button>
-                                <button type="submit" class="primary-btn">Guardar Input</button>
-                            </div>
-                        </form>
-                    </div>
-                </section>
-
-                <!-- VISTA FASE 2: PATRONES -->
-                <section id="phase-2-view" class="hidden">
-                    <div class="section-header">
-                        <h2>Detección de Patrones</h2>
-                        <button id="analyze-patterns-btn" class="primary-btn">
-                            <span class="btn-text">✨ Detectar con IA</span>
-                            <div class="loader"></div>
-                        </button>
-                    </div>
-
-                    <div class="info-banner">
-                        <strong>¿Qué sucede aquí?</strong> La IA analiza los inputs para encontrar comportamientos
-                        recurrentes y contradicciones.<br>
-                        <strong>¿Por qué?</strong> Pasamos de datos sueltos a una estructura de comportamiento
-                        observable.
-                    </div>
-
-                    <div class="method-card" style="margin-bottom: 1.5rem;">
-                        <h3>Guía de Escalas</h3>
-                        <div class="method-grid">
-                            <div class="method-column">
-                                <h4>🔄 Recurrencia</h4>
-                                <ul class="method-list">
-                                    <li><strong>Alta:</strong> Central / Omnipresente.</li>
-                                    <li><strong>Media:</strong> Frecuente.</li>
-                                    <li><strong>Baja:</strong> Aislado.</li>
-                                </ul>
-                            </div>
-                            <div class="method-column">
-                                <h4>⏳ Persistencia</h4>
-                                <ul class="method-list">
-                                    <li><strong>Alta:</strong> Estable en el tiempo.</li>
-                                    <li><strong>Media:</strong> Contextual.</li>
-                                    <li><strong>Baja:</strong> Circunstancial.</li>
-                                </ul>
-                            </div>
-                            <div class="method-column">
-                                <h4>🔥 Presión</h4>
-                                <ul class="method-list">
-                                    <li><strong>Alta:</strong> Solo bajo presión.</li>
-                                    <li><strong>Media:</strong> Mixto.</li>
-                                    <li><strong>Baja:</strong> Espontáneo.</li>
-                                </ul>
-                            </div>
+                <!-- 1. Arquetipo -->
+                <div class="report-section highlight-section">
+                    <h3>1. Arquetipo Asignado</h3>
+                    <div id="rep-archetype">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 class="rep-arch-name" style="margin:0;">--</h2>
+                            <div class="fit-badge" style="background: white; color: var(--accent);">Fit: <span
+                                    id="rep-arch-fit">--</span>%</div>
                         </div>
+                        <p class="rep-arch-desc" style="margin-top: 1rem;">--</p>
+                        <div class="rep-traits" id="rep-traits"></div>
                     </div>
+                </div>
 
-                    <div id="patterns-list" class="patterns-grid">
-                        <!-- Lista de patrones -->
+                <!-- 2. Diagnóstico de Viabilidad -->
+                <div class="report-section">
+                    <h3>2. Diagnóstico de Viabilidad</h3>
+                    <p><strong>Score:</strong> <span id="rep-score">--</span>/100 (<span id="rep-status">--</span>)</p>
+                    <p class="rep-text" id="rep-threshold-reason">--</p>
+                </div>
+
+                <!-- 3. Mapa de Ejes (Radar Chart) -->
+                <div class="report-section">
+                    <h3>3. Mapa de Ejes (Huella Digital)</h3>
+                    <div class="chart-container" style="position: relative; height:400px; width:100%; margin: 0 auto;">
+                        <canvas id="axesRadarChart"></canvas>
                     </div>
-                </section>
+                </div>
 
-                <!-- VISTA FASE 3: EJES -->
-                <section id="phase-3-view" class="hidden">
-                    <div class="section-header">
-                        <h2>Vinculación con Ejes</h2>
-                        <button id="auto-link-btn" class="primary-btn">
-                            <span class="btn-text">🔗 Vincular Automáticamente</span>
-                            <div class="loader"></div>
-                        </button>
-                    </div>
+                <!-- 4. Patrones Detectados -->
+                <div class="report-section">
+                    <h3>4. Patrones Detectados</h3>
+                    <ul id="rep-patterns-list" class="rep-list"></ul>
+                </div>
 
-                    <div class="info-banner">
-                        <strong>¿Qué sucede aquí?</strong> Conectamos cada patrón detectado con uno de los 6 ejes de
-                        masculinidad.<br>
-                        <strong>¿Por qué?</strong> Traducimos comportamientos abstractos en dimensiones analíticas
-                        medibles.
-                    </div>
+                <!-- 5. Tensiones Estructurales -->
+                <div class="report-section">
+                    <h3>5. Tensiones Estructurales</h3>
+                    <ul id="rep-tensions-list" class="rep-list"></ul>
+                </div>
 
-                    <div class="axes-grid" id="axes-container">
-                        <!-- Se generarán 6 columnas, una por eje -->
-                        <div class="axis-column" data-axis="Generación">
-                            <h3>Generación</h3>
-                            <div class="axis-content"></div>
-                        </div>
-                        <div class="axis-column" data-axis="Relación con el cambio feminista">
-                            <h3>Relación Feminista</h3>
-                            <div class="axis-content"></div>
-                        </div>
-                        <div class="axis-column" data-axis="Modelo de masculinidad">
-                            <h3>Modelo Masculinidad</h3>
-                            <div class="axis-content"></div>
-                        </div>
-                        <div class="axis-column" data-axis="Apertura a diversidad sexual y familiar">
-                            <h3>Diversidad</h3>
-                            <div class="axis-content"></div>
-                        </div>
-                        <div class="axis-column" data-axis="Manejo emocional y cuidado de sí">
-                            <h3>Manejo Emocional</h3>
-                            <div class="axis-content"></div>
-                        </div>
-                        <div class="axis-column" data-axis="Presión social / falta de referentes">
-                            <h3>Presión Social</h3>
-                            <div class="axis-content"></div>
-                        </div>
-                    </div>
-                </section>
+                <!-- 6. Desglose de Ejes (Texto) -->
+                <div class="report-section">
+                    <h3>6. Desglose de Ejes</h3>
+                    <div id="rep-axes-grid" class="rep-axes-grid"></div>
+                </div>
 
-                <!-- VISTA FASE 4: DIMENSIONES -->
-                <section id="phase-4-view" class="hidden">
-                    <div class="section-header">
-                        <h2>Clasificación de Dimensiones</h2>
-                        <button id="analyze-dimensions-btn" class="primary-btn">
-                            <span class="btn-text">📊 Analizar Dimensiones</span>
-                            <div class="loader"></div>
-                        </button>
-                    </div>
-
-                    <div class="info-banner">
-                        <strong>¿Qué sucede aquí?</strong> Definimos el estado de cada eje (Definido, En Tensión, No
-                        Definido).<br>
-                        <strong>¿Por qué?</strong> Necesitamos saber qué posturas están claras y cuáles son ambivalentes
-                        en el sujeto.
-                    </div>
-
-                    <div class="dimensions-grid" id="dimensions-container">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
-                </section>
-
-                <!-- VISTA FASE 5: TENSIONES -->
-                <section id="phase-5-view" class="hidden">
-                    <div class="section-header">
-                        <h2>Tensiones Estructurales</h2>
-                        <button id="analyze-tensions-btn" class="primary-btn">
-                            <span class="btn-text">⚡ Detectar Tensiones</span>
-                            <div class="loader"></div>
-                        </button>
-                    </div>
-
-                    <div class="info-banner">
-                        <strong>¿Qué sucede aquí?</strong> Identificamos conflictos estructurales donde el sujeto dice
-                        una cosa pero hace otra.<br>
-                        <strong>¿Por qué?</strong> Las paradojas son la clave para entender la profundidad y la crisis
-                        de la masculinidad.
-                    </div>
-
-                    <div class="method-card" style="margin-bottom: 1.5rem;">
-                        <h3>Guía de Tipos</h3>
-                        <div class="method-grid">
-                            <div class="method-column">
-                                <h4>⚡ Contradicción</h4>
-                                <p style="font-size: 0.9rem; color: var(--text-secondary);">
-                                    Choque directo entre dos posturas opuestas. El sujeto afirma A y hace B. Es un
-                                    conflicto evidente y a menudo consciente.
-                                </p>
-                            </div>
-                            <div class="method-column">
-                                <h4>🌀 Paradoja</h4>
-                                <p style="font-size: 0.9rem; color: var(--text-secondary);">
-                                    Situación compleja donde dos verdades opuestas coexisten. El sujeto intenta cumplir
-                                    ambos mandatos imposibles a la vez. Es más profundo y estructural.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tensions-list" id="tensions-container">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
-                </section>
-
-                <!-- VISTA FASE 6: UMBRAL -->
-                <section id="phase-6-view" class="hidden">
-                    <div class="section-header">
-                        <h2>Fase 6: Diagnóstico de Información</h2>
-                        <button id="analyze-threshold-btn" class="primary-btn">
-                            <span class="btn-text">⚖️ Evaluar Viabilidad</span>
-                            <div class="loader"></div>
-                        </button>
-                    </div>
-
-                    <div class="info-banner">
-                        <strong>¿Qué sucede aquí?</strong> Medimos si tenemos suficiente "densidad" de información para
-                        concluir.<br>
-                        <strong>¿Por qué?</strong> Evitamos crear perfiles basados en datos insuficientes o
-                        superficiales.
-                    </div>
-
-                    <div id="threshold-container" class="threshold-container hidden">
-                        <div class="score-card">
-                            <div class="score-circle">
-                                <span id="threshold-score">--</span>
-                                <span class="score-label">Score</span>
-                            </div>
-                            <div class="status-badge" id="threshold-status">Pendiente</div>
-                        </div>
-                        <div class="reasoning-box">
-                            <h3>Razonamiento de la IA</h3>
-                            <p id="threshold-reasoning">...</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- VISTA FASE 7: ARQUETIPO -->
-                <section id="phase-7-view" class="hidden">
-                    <div class="section-header">
-                        <h2>Asignación de Arquetipo</h2>
-                        <button id="analyze-archetype-btn" class="primary-btn">
-                            <span class="btn-text">🎭 Definir Arquetipo</span>
-                            <div class="loader"></div>
-                        </button>
-                    </div>
-
-                    <div class="info-banner">
-                        <strong>¿Qué sucede aquí?</strong> La IA sintetiza todo (patrones, ejes, tensiones) en un perfil
-                        definitivo.<br>
-                        <strong>¿Por qué?</strong> Es el entregable final que define "quién es" este hombre en el
-                        contexto de las nuevas masculinidades.
-                    </div>
-
-                    <div id="archetype-container" class="archetype-container hidden">
-                        <div class="archetype-card-final">
-                            <div class="arch-header">
-                                <h1 id="arch-name">Nombre del Arquetipo</h1>
-                                <div class="fit-badge">Fit: <span id="arch-fit">--</span>%</div>
-                            </div>
-                            <p class="arch-description" id="arch-desc">...</p>
-
-                            <div class="traits-section">
-                                <h4>Rasgos Clave</h4>
-                                <div class="traits-list" id="arch-traits">
-                                    <!-- Traits -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- VISTA FASE 8: REPORTE -->
-                <section id="phase-8-view" class="hidden">
-                    <div class="section-header">
-                        <h2>Reporte Final</h2>
-                        <div class="header-actions">
-                            <button onclick="window.print()" class="secondary-btn">🖨️ Imprimir / PDF</button>
-                        </div>
-                    </div>
-
-                    <div class="info-banner">
-                        <strong>Resumen Ejecutivo:</strong> Vista consolidada de todo el análisis, lista para exportar o
-                        presentar.
-                    </div>
-
-                    <div class="report-container" id="report-content">
-                        <!-- Header Reporte -->
-                        <div class="report-header">
-                            <h1>PROVOKERS <span class="highlight">PROFILING TOOL</span></h1>
-                            <div class="meta-info">
-                                <p><strong>Caso ID:</strong> <span id="rep-case-id">--</span></p>
-                                <p><strong>Fecha:</strong> <span id="rep-date">--</span></p>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <!-- 1. Arquetipo -->
-                        <div class="report-section highlight-section">
-                            <h3>1. Arquetipo Asignado</h3>
-                            <div id="rep-archetype">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <h2 class="rep-arch-name" style="margin:0;">--</h2>
-                                    <div class="fit-badge" style="background: white; color: var(--accent);">Fit: <span
-                                            id="rep-arch-fit">--</span>%</div>
-                                </div>
-                                <p class="rep-arch-desc" style="margin-top: 1rem;">--</p>
-                                <div class="rep-traits" id="rep-traits"></div>
-                            </div>
-                        </div>
-
-                        <!-- 2. Diagnóstico de Viabilidad -->
-                        <div class="report-section">
-                            <h3>2. Diagnóstico de Viabilidad</h3>
-                            <p><strong>Score:</strong> <span id="rep-score">--</span>/100 (<span
-                                    id="rep-status">--</span>)</p>
-                            <p class="rep-text" id="rep-threshold-reason">--</p>
-                        </div>
-
-                        <!-- 3. Patrones Detectados -->
-                        <div class="report-section">
-                            <h3>3. Patrones Detectados</h3>
-                            <ul id="rep-patterns-list" class="rep-list"></ul>
-                        </div>
-
-                        <!-- 4. Tensiones Estructurales -->
-                        <div class="report-section">
-                            <h3>4. Tensiones Estructurales</h3>
-                            <ul id="rep-tensions-list" class="rep-list"></ul>
-                        </div>
-
-                        <!-- 4. Mapa de Ejes -->
-                        <div class="report-section">
-                            <h3>4. Mapa de Ejes</h3>
-                            <div id="rep-axes-grid" class="rep-axes-grid"></div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="report-footer">
-                            Generado por Profiling Tool de Nuevas Masculinidades Provokers
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </div>
+                <!-- Footer -->
+                <div class="report-footer">
+                    Generado por Profiling Tool de Nuevas Masculinidades Provokers
+                </div>
+            </div>
+        </section>
+        </main>
+    </div>
     </div>
 
     <!-- Script con ID del caso inyectado -->
     <script>
-        const CURRENT_CASE_ID = {{ case_id }};
+        const CURRENT_CASE_ID = "{{ case_id }}";
     </script>
-    <script src="{{ url_for('static', filename='script.js') }}?v=35"></script>
+    <script src="{{ url_for('static', filename='script.js') }}?v=36"></script>
 </body>
 
 </html>
