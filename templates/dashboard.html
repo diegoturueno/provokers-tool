@@ -50,6 +50,45 @@
                     <!-- Cases loaded here -->
                 </div>
             </section>
+
+            <!-- SECTION 3: PROJECT REPORT -->
+            <section id="project-report-section" class="hidden">
+                <div class="actions-bar">
+                    <button id="back-to-project-detail" class="secondary-btn">← Volver al Proyecto</button>
+                    <h1>Reporte Consolidado de Grupo</h1>
+                    <button onclick="window.print()" class="primary-btn">🖨️ Imprimir</button>
+                </div>
+
+                <!-- Controls for AI Mode in Project Report -->
+                <div class="mode-switch-container" style="text-align: right; margin-bottom: 1rem;">
+                    <label style="font-size: 0.9rem; margin-right: 10px;">Modo IA:</label>
+                    <select id="project-ai-mode">
+                        <option value="local">Local (Ollama)</option>
+                        <option value="cloud">Nube (OpenAI)</option>
+                    </select>
+                </div>
+
+                <div class="report-container">
+                    <!-- Executive Summary -->
+                    <div class="report-section">
+                        <h2>Síntesis Estratégica</h2>
+                        <div id="project-ai-analysis" class="markdown-content">Cargando análisis...</div>
+                    </div>
+
+                    <!-- Statistics Grid -->
+                    <div class="stats-grid"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                        <div class="chart-card">
+                            <h3>Distribución de Arquetipos</h3>
+                            <canvas id="archetypePieChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Huella Digital del Grupo (Promedio)</h3>
+                            <canvas id="groupRadarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
