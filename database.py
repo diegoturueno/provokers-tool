@@ -326,5 +326,18 @@ def get_archetype_assignment(case_id):
     conn.close()
     return dict(row) if row else None
 
+# --- PROJECT AGGREGATION ---
+def get_project_cases_full(project_id):
+    cases = get_all_cases(project_id)
+    full_data = []
+    for case in cases:
+        c_id = case['id']
+        case_dict = dict(case)
+        case_dict['archetype'] = get_archetype_assignment(c_id)
+        case_dict['axis_states'] = get_axis_states(c_id)
+        case_dict['patterns'] = get_case_patterns(c_id)
+        full_data.append(case_dict)
+    return full_data
+
 # Inicializar DB al importar si no existe
 init_db()

@@ -3,7 +3,7 @@ import os
 import json
 import database as db
 from datetime import datetime
-from classifier import classify_stimulus_openai, classify_stimulus_local, load_model_definition
+from classifier import classify_stimulus_openai, classify_stimulus_local, load_model_definition, analyze_project_group
 
 app = Flask(__name__)
 
@@ -673,6 +673,92 @@ def get_case_report(case_id):
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
+# --- PROJET REPORT ---
+
+@app.route('/api/projects/<int:project_id>/generate_report', methods=['POST'])
+def generate_project_report(project_id):
+    try:
+        data = request.json or {}
+        mode = data.get('mode', 'local')
+        
+        # 1. Get Project Data
+        project = db.get_project(project_id)
+        if not project: return jsonify({'error': 'Project not found'}), 404
+        
+        cases = db.get_project_cases_full(project_id)
+        if not cases: return jsonify({'error': 'Project has no cases'}), 400
+        
+        # 2. Statistics
+        archetype_counts = {}
+        total_fit_score = 0
+        fit_count = 0
+        
+        # Axis Stat accumulation
+        # Mapping qualitative status to score for Radar Chart
+        score_map = {
+            'definido': 90, 
+            'tensión': 50,
+            'tension': 50,
+            'parcial': 60,
+            'no definido': 30
+        }
+        
+        axis_sums = {}
+        axis_counts = {}
+        
+        for case in cases:
+            # Archetypes
+            arch = case.get('archetype')
+            if arch:
+                name = arch.get('archetype_name', 'Sin Arquetipo')
+                archetype_counts[name] = archetype_counts.get(name, 0) + 1
+                if arch.get('fit_score'):
+                    total_fit_score += int(arch.get('fit_score'))
+                    fit_count += 1
+            
+            # Axes
+            axes = case.get('axis_states', [])
+            for ax in axes:
+                name = ax['axis_name']
+                status = (ax.get('status') or 'no definido').lower()
+                
+                score = 30 # Default low score
+                for k, v in score_map.items():
+                    if k in status:
+                        score = v
+                        break
+                
+                axis_sums[name] = axis_sums.get(name, 0) + score
+                axis_counts[name] = axis_counts.get(name, 0) + 1
+                
+        # Calculate Averages
+        avg_axes = {}
+        for k, v in axis_sums.items():
+            avg_axes[k] = v / axis_counts[k] if axis_counts[k] > 0 else 0
+            
+        avg_fit = round(total_fit_score / fit_count, 1) if fit_count > 0 else 0
+        
+        # 3. AI Analysis
+        ai_report_text = analyze_project_group(project['name'], cases, mode)
+        
+        # 4. Construct Response
+        response_data = {
+            "project_name": project['name'],
+            "case_count": len(cases),
+            "stats": {
+                "archetype_distribution": archetype_counts,
+                "average_fit": avg_fit,
+                "axis_averages": avg_axes
+            },
+            "ai_analysis": ai_report_text # Markdown string
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+         import traceback; traceback.print_exc()
+         return jsonify({'error': str(e)}), 500
 
 # Legacy / Fase 2 (Placeholder para futuro)
 @app.route('/api/classify', methods=['POST'])

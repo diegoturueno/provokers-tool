@@ -82,6 +82,77 @@ Responde SOLO con la clasificación.
     except Exception as e:
         return f"Error al llamar a Ollama: {e}\n¿Tienes Ollama instalado y corriendo? (https://ollama.com)"
 
+# --- NUEVA FUNCIÓN: ANÁLISIS DE GRUPO (PROYECTO) ---
+
+def analyze_project_group(project_name, cases_data, mode='local', model_name="llama3"):
+    # 1. Prepare Data Summary
+    summary_text = f"Proyecto: {project_name}\n\nListado de Casos:\n"
+    for c in cases_data:
+        arch = c.get('archetype') or {}
+        arch_name = arch.get('archetype_name', 'Sin Arquetipo')
+        summary_text += f"- Caso {c['identifier']}: Arquetipo {arch_name}. "
+        
+        # Add top patterns if available
+        patterns = c.get('patterns', [])
+        if patterns:
+             top_patterns = [p['description'] for p in patterns[:3]]
+             summary_text += f"Patrones clave: {', '.join(top_patterns)}. "
+        summary_text += "\n"
+
+    # 2. Build Prompts
+    system_prompt = """
+    Eres un estratega experto en sociología, antropología y nuevas masculinidades.
+    Tu tarea es analizar un GRUPO de casos de hombres y generar una SÍNTESIS COLECTIVA.
+    No analices caso por caso individualmente, busca lo que tienen en común, las tendencias del grupo.
+    Usa un tono profesional, perspicaz y estratégico.
+    """
+    
+    user_prompt = f"""
+    ANALIZAR GRUPO: {project_name}
+    
+    DATOS DE LOS CASOS:
+    {summary_text}
+    
+    Genera un reporte con la siguiente estructura EXACTA (en Markdown):
+    
+    ### 1. Definición del Grupo
+    [Un párrafo denso y profundo definiendo quiénes son estos hombres colectivamente, qué "vibe" o tensión comparten, qué los une como tribu.]
+
+    ### 2. Barreras Comunes
+    - [Barrera 1: Explicación breve]
+    - [Barrera 2: Explicación breve]
+    - [Barrera 3: Explicación breve]
+
+    ### 3. Oportunidades Estratégicas
+    - [Oportunidad 1: Explicación breve]
+    - [Oportunidad 2: Explicación breve]
+    """
+
+    print(f"Generando reporte de grupo en modo: {mode}...")
+
+    try:
+        if mode == 'cloud':
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.4
+            )
+            return response.choices[0].message.content
+        else:
+            # Local Mode (Ollama)
+            ollama_prompt = f"[INST]{system_prompt}\n\n{user_prompt}[/INST]"
+            response = ollama.chat(model=model_name, messages=[
+                {'role': 'user', 'content': ollama_prompt},
+            ])
+            return response['message']['content']
+
+    except Exception as e:
+        return f"Error generando reporte de grupo: {str(e)}"
+
 def main():
     parser = argparse.ArgumentParser(description="Clasificador de Masculinidades Provokers")
     parser.add_argument('input', help="Texto a analizar o ruta a un archivo de texto")

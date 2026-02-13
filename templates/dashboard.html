@@ -39,6 +39,8 @@
                         <h1 id="current-project-title">Nombre del Proyecto</h1>
                     </div>
                     <div>
+                        <button id="generate-report-btn" class="secondary-btn" style="margin-right: 10px;">📊 Reporte de
+                            Grupo</button>
                         <button id="delete-project-btn" class="btn-danger" style="margin-right: 10px;">🗑️ Eliminar
                             Proyecto</button>
                         <button id="new-case-btn" class="primary-btn">+ Nuevo Caso</button>
@@ -90,6 +92,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script> <!-- Markdown Parser -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
