@@ -1,8 +1,12 @@
 import sqlite3
 import json
+import os
 from datetime import datetime
 
-DB_NAME = 'phenoma.db'
+# Get absolute path to the directory where this script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Force DB to be in this directory
+DB_NAME = os.path.join(BASE_DIR, 'phenoma.db')
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)
@@ -13,10 +17,24 @@ def init_db():
     conn = get_db_connection()
     c = conn.cursor()
     
+    # 0. Projects Framework (Fase 0.5)
+    c.execute('''CREATE TABLE IF NOT EXISTS projects
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+
     # 1. Crear Tablas Principales
     c.execute('''CREATE TABLE IF NOT EXISTS cases
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, identifier TEXT, description TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, status TEXT)''')
     
+    # Check if project_id exists in cases, if not add it (Migration)
+    c.execute("PRAGMA table_info(cases)")
+    columns = [info[1] for info in c.fetchall()]
+    if 'project_id' not in columns:
+        print("Migrating DB: Adding project_id to cases table...")
+        c.execute('ALTER TABLE cases ADD COLUMN project_id INTEGER DEFAULT 1')
+        # Create default project if needed
+        c.execute('INSERT OR IGNORE INTO projects (id, name, description) VALUES (1, "General", "Carpeta por defecto para casos migrados")')
+        c.execute('UPDATE cases SET project_id = 1 WHERE project_id IS NULL')
+
     c.execute('''CREATE TABLE IF NOT EXISTS inputs
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id INTEGER, content TEXT, input_type TEXT, metadata TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (case_id) REFERENCES cases (id))''')
     
@@ -72,22 +90,78 @@ def init_db():
     conn.commit()
     conn.close()
 
-# --- Funciones de Acceso a Datos (DAO) ---
+# --- PROJECT DAOs ---
 
-def create_case(identifier, description=""):
+def create_project(name, description=""):
     conn = get_db_connection()
     c = conn.cursor()
     created_at = datetime.now().isoformat()
-    c.execute('INSERT INTO cases (identifier, description, created_at) VALUES (?, ?, ?)',
-              (identifier, description, created_at))
+    c.execute('INSERT INTO projects (name, description, created_at) VALUES (?, ?, ?)',
+              (name, description, created_at))
+    pid = c.lastrowid
+    conn.commit()
+    conn.close()
+    return pid
+
+def get_all_projects():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''
+        SELECT p.*, COUNT(c.id) as case_count 
+        FROM projects p 
+        LEFT JOIN cases c ON p.id = c.project_id 
+        GROUP BY p.id 
+        ORDER BY p.created_at DESC
+    ''')
+    projects = c.fetchall()
+    conn.close()
+    return [dict(ix) for ix in projects]
+
+def get_project(project_id):
+    conn = get_db_connection()
+    project = conn.execute('SELECT * FROM projects WHERE id = ?', (project_id,)).fetchone()
+    conn.close()
+    return dict(project) if project else None
+
+def delete_project(project_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    # Delete all cases in project (cascade logic implemented manually)
+    cases = c.execute('SELECT id FROM cases WHERE project_id = ?', (project_id,)).fetchall()
+    for case_row in cases:
+        case_id = case_row['id']
+        # Delete case data (tables list from delete_case)
+        tables = ['inputs', 'patterns', 'axis_assignments', 'axis_states', 'tensions', 'threshold_evaluations', 'archetype_assignments']
+        for table in tables:
+             try: c.execute(f'DELETE FROM {table} WHERE case_id = ?', (case_id,))
+             except: pass
+        c.execute('DELETE FROM cases WHERE id = ?', (case_id,))
+    
+    # Finally delete project
+    c.execute('DELETE FROM projects WHERE id = ?', (project_id,))
+    conn.commit()
+    conn.close()
+    return True
+
+# --- Funciones de Acceso a Datos (DAO) ---
+
+def create_case(identifier, description="", project_id=1):
+    conn = get_db_connection()
+    c = conn.cursor()
+    created_at = datetime.now().isoformat()
+    c.execute('INSERT INTO cases (identifier, description, project_id, created_at) VALUES (?, ?, ?, ?)',
+              (identifier, description, project_id, created_at))
     case_id = c.lastrowid
     conn.commit()
     conn.close()
     return case_id
 
-def get_all_cases():
+def get_all_cases(project_id=None):
     conn = get_db_connection()
-    cases = conn.execute('SELECT * FROM cases ORDER BY created_at DESC').fetchall()
+    if project_id:
+        cases = conn.execute('SELECT * FROM cases WHERE project_id = ? ORDER BY created_at DESC', (project_id,)).fetchall()
+    else:
+        cases = conn.execute('SELECT * FROM cases ORDER BY created_at DESC').fetchall()
     conn.close()
     return [dict(ix) for ix in cases]
 

@@ -14,30 +14,69 @@
         <header class="main-header">
             <div class="logo">Profiling Tool de Nuevas Masculinidades <span class="highlight">Provokers</span></div>
             <nav>
-                <a href="/" class="active">Casos</a>
+                <a href="#" id="nav-projects" class="active">Proyectos</a>
                 <a href="/context">Metodología</a>
             </nav>
         </header>
 
         <main class="dashboard-content">
-            <section class="actions-bar">
-                <h1>Gestión de Casos</h1>
-                <button id="new-case-btn" class="primary-btn">+ Nuevo Caso</button>
+            <!-- SECTION 1: PROJECTS LIST -->
+            <section id="projects-section">
+                <div class="actions-bar">
+                    <h1>Mis Proyectos</h1>
+                    <button id="new-project-btn" class="primary-btn">+ Nuevo Proyecto</button>
+                </div>
+                <div id="projects-grid" class="cases-grid">
+                    <div class="loading-spinner">Cargando proyectos...</div>
+                </div>
             </section>
 
-            <div id="cases-grid" class="cases-grid">
-                <!-- Los casos se cargarán aquí dinámicamente -->
-                <div class="loading-spinner">Cargando casos...</div>
-            </div>
+            <!-- SECTION 2: PROJECT DETAIL (CASES LIST) -->
+            <section id="project-detail-section" class="hidden">
+                <div class="actions-bar">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <button id="back-to-projects" class="secondary-btn">← Volver</button>
+                        <h1 id="current-project-title">Nombre del Proyecto</h1>
+                    </div>
+                    <div>
+                        <button id="delete-project-btn" class="btn-danger" style="margin-right: 10px;">🗑️ Eliminar
+                            Proyecto</button>
+                        <button id="new-case-btn" class="primary-btn">+ Nuevo Caso</button>
+                    </div>
+                </div>
+                <div id="cases-grid" class="cases-grid">
+                    <!-- Cases loaded here -->
+                </div>
+            </section>
         </main>
+    </div>
+
+    <!-- Modal Nuevo Proyecto -->
+    <div id="new-project-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-project-modal">&times;</span>
+            <h2>Crear Nuevo Proyecto</h2>
+            <form id="new-project-form">
+                <div class="form-group">
+                    <label>Nombre del Cliente / Proyecto</label>
+                    <input type="text" id="project-name" placeholder="Ej: Tech Corp - Gen Z" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción (Opcional)</label>
+                    <textarea id="project-description" placeholder="Objetivo del estudio..."></textarea>
+                </div>
+                <button type="submit" class="primary-btn">Crear Proyecto</button>
+            </form>
+        </div>
     </div>
 
     <!-- Modal Nuevo Caso -->
     <div id="new-case-modal" class="modal">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
+            <span class="close-modal" id="close-case-modal">&times;</span>
             <h2>Crear Nuevo Caso</h2>
             <form id="new-case-form">
+                <input type="hidden" id="current-project-id">
                 <div class="form-group">
                     <label>Identificador del Caso</label>
                     <input type="text" id="case-identifier" placeholder="Ej: Entrevista Sujeto A" required>
