@@ -279,10 +279,12 @@ function initDashboard() {
 
     // 6. PROJECT REPORT LOGIC
     const generateReportBtn = document.getElementById('generate-report-btn');
+    const updateReportBtn = document.getElementById('update-report-btn');
     const projectReportSection = document.getElementById('project-report-section');
     const backToDetailBtn = document.getElementById('back-to-project-detail');
     const aiAnalysisDiv = document.getElementById('project-ai-analysis');
     const aiModeSelect = document.getElementById('project-ai-mode');
+    const reportLastUpdated = document.getElementById('report-last-updated');
 
     // Back Button
     if (backToDetailBtn) backToDetailBtn.onclick = () => {
@@ -290,17 +292,10 @@ function initDashboard() {
         projectDetailSection.classList.remove('hidden');
     };
 
-    // Generate Button
-    if (generateReportBtn) generateReportBtn.onclick = async () => {
-        if (!CURRENT_PROJECT_ID) return;
-
-        // UI Switch
-        projectDetailSection.classList.add('hidden');
-        projectReportSection.classList.remove('hidden');
-
+    // Helper to generate new report
+    async function generateNewReport(mode) {
         aiAnalysisDiv.innerHTML = '<div class="loading-spinner">Generando reporte con IA... (Esto puede tardar unos segundos)</div>';
-
-        const mode = aiModeSelect ? aiModeSelect.value : 'local';
+        reportLastUpdated.textContent = 'Actualizando...';
 
         try {
             const res = await fetch(`/api/projects/${CURRENT_PROJECT_ID}/generate_report`, {
@@ -319,9 +314,46 @@ function initDashboard() {
         } catch (e) {
             aiAnalysisDiv.innerHTML = `<div style="color:red">Error de conexión: ${e.message}</div>`;
         }
+    }
+
+    // Generate Button (First checks if it exists)
+    if (generateReportBtn) generateReportBtn.onclick = async () => {
+        if (!CURRENT_PROJECT_ID) return;
+
+        // UI Switch
+        projectDetailSection.classList.add('hidden');
+        projectReportSection.classList.remove('hidden');
+
+        aiAnalysisDiv.innerHTML = '<div class="loading-spinner">Buscando reporte...</div>';
+
+        try {
+            const res = await fetch(`/api/projects/${CURRENT_PROJECT_ID}/report`, { method: 'GET' });
+
+            if (res.ok) {
+                const data = await res.json();
+                renderProjectReport(data);
+            } else {
+                // If not found or error, generate a new one
+                const mode = aiModeSelect ? aiModeSelect.value : 'local';
+                generateNewReport(mode);
+            }
+        } catch (e) {
+            aiAnalysisDiv.innerHTML = `<div style="color:red">Error de conexión: ${e.message}</div>`;
+        }
+    };
+
+    // Update Button (Forces new generation)
+    if (updateReportBtn) updateReportBtn.onclick = () => {
+        if (!CURRENT_PROJECT_ID) return;
+        const mode = aiModeSelect ? aiModeSelect.value : 'local';
+        generateNewReport(mode);
     };
 
     function renderProjectReport(data) {
+        if (reportLastUpdated && data.generated_at) {
+            const dateObj = new Date(data.generated_at);
+            reportLastUpdated.textContent = `Última actualización: ${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`;
+        }
         // 1. Text Analysis (Markdown)
         // Check if showdon is loaded
         if (typeof showdown !== 'undefined') {

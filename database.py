@@ -86,10 +86,17 @@ def init_db():
             key_traits TEXT,
             created_at TEXT
         )''')
+    # 6. Reportes de Proyecto
+    c.execute('''CREATE TABLE IF NOT EXISTS project_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER NOT NULL UNIQUE,
+            report_data TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
+        )''')
 
     conn.commit()
     conn.close()
-
 # --- PROJECT DAOs ---
 
 def create_project(name, description=""):
@@ -338,6 +345,34 @@ def get_project_cases_full(project_id):
         case_dict['patterns'] = get_case_patterns(c_id)
         full_data.append(case_dict)
     return full_data
+
+# --- PROJECT REPORTS ---
+def save_project_report(project_id, report_data):
+    conn = get_db_connection()
+    c = conn.cursor()
+    created_at = datetime.now().isoformat()
+    # Replace existing or insert new
+    c.execute('DELETE FROM project_reports WHERE project_id = ?', (project_id,))
+    c.execute('INSERT INTO project_reports (project_id, report_data, created_at) VALUES (?, ?, ?)',
+              (project_id, json.dumps(report_data), created_at))
+    conn.commit()
+    conn.close()
+
+def get_project_report(project_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT * FROM project_reports WHERE project_id = ?', (project_id,))
+    row = c.fetchone()
+    conn.close()
+    if row:
+        data = dict(row)
+        try:
+            data['report_data'] = json.loads(data['report_data'])
+        except:
+            data['report_data'] = {}
+        return data
+    return None
+
 
 # Inicializar DB al importar si no existe
 init_db()

@@ -676,6 +676,20 @@ def get_case_report(case_id):
 
 # --- PROJET REPORT ---
 
+@app.route('/api/projects/<int:project_id>/report', methods=['GET'])
+def get_project_report_endpoint(project_id):
+    project = db.get_project(project_id)
+    if not project: return jsonify({'error': 'Project not found'}), 404
+    
+    report = db.get_project_report(project_id)
+    if report:
+        # Include the created_at timestamp
+        response_data = report['report_data']
+        response_data['generated_at'] = report['created_at']
+        return jsonify(response_data)
+    else:
+        return jsonify({'error': 'Report not found'}), 404
+
 @app.route('/api/projects/<int:project_id>/generate_report', methods=['POST'])
 def generate_project_report(project_id):
     try:
@@ -753,6 +767,12 @@ def generate_project_report(project_id):
             },
             "ai_analysis": ai_report_text # Markdown string
         }
+        
+        # Save to database
+        db.save_project_report(project_id, response_data)
+        
+        # Add generated_at for immediate response just like DB get
+        response_data['generated_at'] = datetime.now().isoformat()
         
         return jsonify(response_data)
         

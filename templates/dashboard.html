@@ -56,7 +56,11 @@
                 <div class="actions-bar">
                     <button id="back-to-project-detail" class="secondary-btn">← Volver al Proyecto</button>
                     <h1>Reporte Consolidado de Grupo</h1>
-                    <button onclick="window.print()" class="primary-btn">🖨️ Imprimir</button>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span id="report-last-updated" style="font-size: 0.9em; color: var(--text-secondary);"></span>
+                        <button id="update-report-btn" class="secondary-btn">🔄 Actualizar Reporte</button>
+                        <button onclick="window.print()" class="primary-btn">🖨️ Imprimir</button>
+                    </div>
                 </div>
 
                 <!-- Controls for AI Mode in Project Report -->
