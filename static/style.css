@@ -387,11 +387,14 @@ body {
     }
 
     #phase-8-view,
-    #phase-8-view * {
+    #phase-8-view *,
+    #project-report-section,
+    #project-report-section * {
         visibility: visible;
     }
 
-    #phase-8-view {
+    #phase-8-view,
+    #project-report-section {
         position: absolute;
         left: 0;
         top: 0;
@@ -405,8 +408,10 @@ body {
         max-width: 100%;
     }
 
-    .section-header button {
-        display: none;
+    .section-header button,
+    #project-report-section .actions-bar button,
+    #project-report-section .mode-switch-container {
+        display: none !important;
     }
 }
 
